@@ -7,7 +7,7 @@ const canvasRes = 500;
 canvas.width = canvasRes;
 canvas.height = canvasRes;
 
-const debugEnabled = true;
+const debugEnabled = false;
 
 export const getRandom = (min, max) =>
   Math.floor(Math.random() * (max - min) + min);
@@ -31,7 +31,7 @@ const line = (x, y, tx, ty, displayText, renderCenter) => {
   context.stroke();
   context.fillStyle = "darkgray";
   renderCenter && circ((x + tx) / 2, (y + ty) / 2, 2);
-  displayText && text((x + tx) / 2, (y + ty) / 2, displayText);
+  displayText && debugEnabled && text((x + tx) / 2, (y + ty) / 2, displayText);
 };
 
 const rect = (x, y, s, col) => {
@@ -62,6 +62,29 @@ const SpaceEntities = [
       nav: {
         postArrival: "idle",
         points: [{ x: 40, y: 40 }]
+      }
+    }
+  },
+  {
+    enabled: true,
+    selected: false,
+    properties: {
+      name: "AK-886",
+      type: "ship",
+      size: 10,
+      speed: 1
+    },
+    status: {
+      moving: true,
+      idle: false
+    },
+    position: {
+      x: 100,
+      y: 10,
+      drawNav: true,
+      nav: {
+        postArrival: "idle",
+        points: [{ x: 350, y: 122 }]
       }
     }
   },
@@ -124,7 +147,6 @@ const update = () => {
                 entity.position.nav.points.length
               );
             } else {
-              console.log(entity.properties.name, "no nav points left");
               if (
                 !entity.status.idle &&
                 entity.position.nav.postArrival === "idle"
