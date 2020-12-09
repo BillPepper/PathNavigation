@@ -7,7 +7,7 @@ const canvasRes = 500;
 canvas.width = canvasRes;
 canvas.height = canvasRes;
 
-const debugEnabled = false;
+const debugEnabled = true;
 
 export const getRandom = (min, max) =>
   Math.floor(Math.random() * (max - min) + min);
@@ -163,12 +163,12 @@ const draw = () => {
         // render navigation
         let lastNav = undefined;
         entity.position.nav.points.forEach((navPoint, routeIndex) => {
-          context.strokeStyle = routeIndex === 0 ? "green" : "gray";
+          context.strokeStyle = routeIndex === 0 ? "green" : "pink";
           if (lastNav) {
             line(lastNav.x, lastNav.y, navPoint.x, navPoint.y);
           } else {
-            const xDistance = navPoint.x - entity.x;
-            const yDistance = navPoint.y - entity.y;
+            const xDistance = navPoint.x - entity.position.x;
+            const yDistance = navPoint.y - entity.position.y;
             const hyph = Math.sqrt(
               xDistance * xDistance + yDistance * yDistance
             );
@@ -184,16 +184,16 @@ const draw = () => {
             context.strokeStyle = "gray"; // reset color, helplines are gray anyway
             if (entity.selected) {
               line(
-                entity.x,
+                entity.position.x,
                 navPoint.y,
                 navPoint.x,
                 navPoint.y,
                 hyph !== yDistance && yDistance !== 0 && `y: ${yDistance}`
               );
               line(
-                entity.x,
-                entity.y,
-                entity.x,
+                entity.position.x,
+                entity.position.y,
+                entity.position.x,
                 navPoint.y,
                 yDistance !== xDistance && xDistance !== 0 && `x: ${xDistance}`
               );
