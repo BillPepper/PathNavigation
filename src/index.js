@@ -7,12 +7,14 @@ const canvasRes = 500;
 canvas.width = canvasRes;
 canvas.height = canvasRes;
 
+const debugEnabled = false;
+
 export const getRandom = (min, max) =>
   Math.floor(Math.random() * (max - min) + min);
 
 const text = (x, y, str) => {
   context.font = "12px Arial";
-  context.fillText(str, x, y);
+  debugEnabled && context.fillText(str, x, y);
 };
 
 const circ = (x, y, r) => {
@@ -33,16 +35,17 @@ const line = (x, y, tx, ty, displayText, renderCenter) => {
   displayText && text((x + tx) / 2, (y + ty) / 2, displayText);
 };
 
-const rect = (x, y, s) => {
+const rect = (x, y, s, col) => {
   context.beginPath();
   context.rect(x, y, s, s);
-  context.fillStyle = "#555";
+  context.fillStyle = col || "#555";
   context.fill();
 };
 
 const SpaceEntities = [
   {
     enabled: true,
+    selected: true,
     name: "ship1",
     type: "ship",
     moving: true,
@@ -50,7 +53,7 @@ const SpaceEntities = [
     x: 10,
     y: 10,
     size: 10,
-    speed: 1,
+    speed: 2,
     target: { x: 0, y: 0 },
     drawNav: true,
     nav: [
@@ -64,6 +67,7 @@ const SpaceEntities = [
   },
   {
     enabled: true,
+    selected: false,
     name: "ship2",
     type: "ship",
     moving: true,
@@ -73,8 +77,8 @@ const SpaceEntities = [
     size: 10,
     speed: 1,
     target: { x: 0, y: 0 },
-    drawNav: false,
-    nav: [{ x: 0, y: 0 }]
+    drawNav: true,
+    nav: [{ x: 123, y: 234 }]
   },
   {
     enabled: false,
@@ -95,7 +99,6 @@ const SpaceEntities = [
     size: 10,
     speed: 1,
     drawNav: true,
-    persitentNav: false, // needs handling of nav order otherwise confusion...
     nav: [
       { x: 215, y: 215 },
       { x: 250, y: 200 },
@@ -127,13 +130,13 @@ const update = () => {
           }
 
           if (entity.y === entity.nav[0].y && entity.x === entity.nav[0].x) {
-            console.log("arrived nav point");
-            if (entity.nav.length > 1 && !entity.persitentNav) {
+            // i think the ship stops entirely when hitten a nav point
+            // altough it's in idle mode
+            if (entity.nav.length > 1) {
               entity.nav = entity.nav.slice(1, entity.nav.length);
             } else {
               console.log(entity.name, "no nav points left");
               if (entity.idle) {
-                console.log(entity.name, "start idle movement");
                 entity.nav.push({
                   x: getRandom(100, 300),
                   y: getRandom(100, 300)
@@ -163,7 +166,7 @@ const draw = () => {
         // render navigation
         let lastNav = undefined;
         entity.nav.forEach((navPoint, routeIndex) => {
-          context.strokeStyle = routeIndex === 0 && "#00ff00";
+          context.strokeStyle = routeIndex === 0 ? "green" : "gray";
           if (lastNav) {
             line(lastNav.x, lastNav.y, navPoint.x, navPoint.y);
           } else {
@@ -180,22 +183,24 @@ const draw = () => {
               navPoint.y,
               hyph > 0 && Math.round(hyph)
             );
-            context.strokeStyle = "gray";
 
-            line(
-              entity.x,
-              navPoint.y,
-              navPoint.x,
-              navPoint.y,
-              hyph !== yDistance && yDistance !== 0 && `y: ${yDistance}`
-            );
-            line(
-              entity.x,
-              entity.y,
-              entity.x,
-              navPoint.y,
-              yDistance !== xDistance && xDistance !== 0 && `x: ${xDistance}`
-            );
+            context.strokeStyle = "gray"; // reset color, helplines are gray anyway
+            if (entity.selected) {
+              line(
+                entity.x,
+                navPoint.y,
+                navPoint.x,
+                navPoint.y,
+                hyph !== yDistance && yDistance !== 0 && `y: ${yDistance}`
+              );
+              line(
+                entity.x,
+                entity.y,
+                entity.x,
+                navPoint.y,
+                yDistance !== xDistance && xDistance !== 0 && `x: ${xDistance}`
+              );
+            }
           }
           circ(navPoint.x, navPoint.y, 3);
 
