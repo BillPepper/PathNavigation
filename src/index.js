@@ -28,7 +28,6 @@ const line = (x, y, tx, ty, displayText, renderCenter) => {
   context.beginPath();
   context.moveTo(x, y);
   context.lineTo(tx, ty);
-  // renderDesc && text((x-tx) / 2, (y-ty) / 2);
   context.stroke();
   context.fillStyle = "darkgray";
   renderCenter && circ((x + tx) / 2, (y + ty) / 2, 2);
@@ -47,7 +46,7 @@ const SpaceEntities = [
     enabled: true,
     selected: true,
     properties: {
-      name: "ship1",
+      name: "EZ-100",
       type: "ship",
       size: 10,
       speed: 2
@@ -60,27 +59,10 @@ const SpaceEntities = [
       x: 10,
       y: 10,
       drawNav: true,
-      nav: [{ x: 40, y: 40 }]
-    }
-  },
-  {
-    enabled: false,
-    selected: false,
-    properties: {
-      name: "ship2",
-      type: "ship",
-      size: 10,
-      speed: 1
-    },
-    status: {
-      moving: true,
-      idle: true
-    },
-    position: {
-      x: 300,
-      y: 300,
-      drawNav: true,
-      nav: [{ x: 123, y: 234 }]
+      nav: {
+        postArrival: "idle",
+        points: [{ x: 40, y: 40 }]
+      }
     }
   },
   {
@@ -119,32 +101,35 @@ const update = () => {
     SpaceEntities.forEach((entity) => {
       if (entity.enabled) {
         if (entity.status.moving) {
-          if (entity.position.x < entity.position.nav[0].x) {
+          if (entity.position.x < entity.position.nav.points[0].x) {
             entity.position.x += entity.properties.speed;
           }
-          if (entity.position.x > entity.position.nav[0].x) {
+          if (entity.position.x > entity.position.nav.points[0].x) {
             entity.position.x -= entity.properties.speed;
           }
-          if (entity.position.y < entity.position.nav[0].y) {
+          if (entity.position.y < entity.position.nav.points[0].y) {
             entity.position.y += entity.properties.speed;
           }
-          if (entity.position.y > entity.position.nav[0].y) {
+          if (entity.position.y > entity.position.nav.points[0].y) {
             entity.position.y -= entity.properties.speed;
           }
 
           if (
-            entity.position.y === entity.position.nav[0].y &&
-            entity.position.x === entity.position.nav[0].x
+            entity.position.y === entity.position.nav.points[0].y &&
+            entity.position.x === entity.position.nav.points[0].x
           ) {
-            if (entity.position.nav.length > 1) {
-              entity.position.nav = entity.position.nav.slice(
+            if (entity.position.nav.points.length > 1) {
+              entity.position.nav.points = entity.position.nav.points.slice(
                 1,
-                entity.position.nav.length
+                entity.position.nav.points.length
               );
             } else {
               console.log(entity.properties.name, "no nav points left");
+              if (entity.position.nav.postArrival === "idle") {
+                entity.status.idle = true;
+              }
               if (entity.status.idle) {
-                entity.position.nav.push({
+                entity.position.nav.points.push({
                   x: getRandom(100, 300),
                   y: getRandom(100, 300)
                 });
@@ -173,7 +158,7 @@ const draw = () => {
       if (entity.position.drawNav) {
         // render navigation
         let lastNav = undefined;
-        entity.position.nav.forEach((navPoint, routeIndex) => {
+        entity.position.nav.points.forEach((navPoint, routeIndex) => {
           context.strokeStyle = routeIndex === 0 ? "green" : "gray";
           if (lastNav) {
             line(lastNav.x, lastNav.y, navPoint.x, navPoint.y);
@@ -227,16 +212,10 @@ const draw = () => {
       } else if (entity.properties.type === "planet") {
         circ(entity.position.x, entity.position.y, entity.properties.size);
       } else if (entity.properties.type === "sun") {
-        // render sun
-        context.strokeStyle = "#ff00ff";
         circ(250, 250, 20);
       }
     }
   });
-
-  // Grid
-  // line(0, 250, 500, 250);
-  // line(250, 0, 250, 500);
 };
 
 const mainInterval = setInterval(() => {
