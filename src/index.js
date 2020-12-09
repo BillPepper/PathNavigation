@@ -49,7 +49,7 @@ const SpaceEntities = [
       name: "EZ-100",
       type: "ship",
       size: 10,
-      speed: 2
+      speed: 1
     },
     status: {
       moving: true,
@@ -125,7 +125,11 @@ const update = () => {
               );
             } else {
               console.log(entity.properties.name, "no nav points left");
-              if (entity.position.nav.postArrival === "idle") {
+              if (
+                !entity.status.idle &&
+                entity.position.nav.postArrival === "idle"
+              ) {
+                console.log(entity.properties.name, "idle");
                 entity.status.idle = true;
               }
               if (entity.status.idle) {
