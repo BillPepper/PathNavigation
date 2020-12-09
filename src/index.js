@@ -46,39 +46,42 @@ const SpaceEntities = [
   {
     enabled: true,
     selected: true,
-    name: "ship1",
-    type: "ship",
-    moving: true,
-    idle: true,
-    x: 10,
-    y: 10,
-    size: 10,
-    speed: 2,
-    target: { x: 0, y: 0 },
-    drawNav: true,
-    nav: [
-      { x: 40, y: 40 }
-      // { x: 250, y: 125, r: 20 },
-      // { x: 320, y: 170, r: 20 },
-      // { x: 350, y: 250, r: 20 },
-      // { x: 300, y: 290, r: 20 },
-      // { x: 250, y: 375, r: 20 }
-    ]
+    properties: {
+      name: "ship1",
+      type: "ship",
+      size: 10,
+      speed: 2
+    },
+    status: {
+      moving: true,
+      idle: false
+    },
+    position: {
+      x: 10,
+      y: 10,
+      drawNav: true,
+      nav: [{ x: 40, y: 40 }]
+    }
   },
   {
-    enabled: true,
+    enabled: false,
     selected: false,
-    name: "ship2",
-    type: "ship",
-    moving: true,
-    idle: true,
-    x: 300,
-    y: 300,
-    size: 10,
-    speed: 1,
-    target: { x: 0, y: 0 },
-    drawNav: true,
-    nav: [{ x: 123, y: 234 }]
+    properties: {
+      name: "ship2",
+      type: "ship",
+      size: 10,
+      speed: 1
+    },
+    status: {
+      moving: true,
+      idle: true
+    },
+    position: {
+      x: 300,
+      y: 300,
+      drawNav: true,
+      nav: [{ x: 123, y: 234 }]
+    }
   },
   {
     enabled: false,
@@ -115,34 +118,39 @@ const update = () => {
   try {
     SpaceEntities.forEach((entity) => {
       if (entity.enabled) {
-        if (entity.moving) {
-          if (entity.x < entity.nav[0].x) {
-            entity.x += entity.speed;
+        if (entity.status.moving) {
+          if (entity.position.x < entity.position.nav[0].x) {
+            entity.position.x += entity.properties.speed;
           }
-          if (entity.x > entity.nav[0].x) {
-            entity.x -= entity.speed;
+          if (entity.position.x > entity.position.nav[0].x) {
+            entity.position.x -= entity.properties.speed;
           }
-          if (entity.y < entity.nav[0].y) {
-            entity.y += entity.speed;
+          if (entity.position.y < entity.position.nav[0].y) {
+            entity.position.y += entity.properties.speed;
           }
-          if (entity.y > entity.nav[0].y) {
-            entity.y -= entity.speed;
+          if (entity.position.y > entity.position.nav[0].y) {
+            entity.position.y -= entity.properties.speed;
           }
 
-          if (entity.y === entity.nav[0].y && entity.x === entity.nav[0].x) {
-            // i think the ship stops entirely when hitten a nav point
-            // altough it's in idle mode
-            if (entity.nav.length > 1) {
-              entity.nav = entity.nav.slice(1, entity.nav.length);
+          if (
+            entity.position.y === entity.position.nav[0].y &&
+            entity.position.x === entity.position.nav[0].x
+          ) {
+            if (entity.position.nav.length > 1) {
+              entity.position.nav = entity.position.nav.slice(
+                1,
+                entity.position.nav.length
+              );
             } else {
-              console.log(entity.name, "no nav points left");
-              if (entity.idle) {
-                entity.nav.push({
+              console.log(entity.properties.name, "no nav points left");
+              if (entity.status.idle) {
+                entity.position.nav.push({
                   x: getRandom(100, 300),
                   y: getRandom(100, 300)
                 });
               } else {
-                entity.moving = false;
+                entity.status.moving = false;
+                console.log(entity.properties.name, "i'm out");
               }
             }
           }
@@ -162,10 +170,10 @@ const draw = () => {
 
   SpaceEntities.forEach((entity) => {
     if (entity.enabled) {
-      if (entity.drawNav) {
+      if (entity.position.drawNav) {
         // render navigation
         let lastNav = undefined;
-        entity.nav.forEach((navPoint, routeIndex) => {
+        entity.position.nav.forEach((navPoint, routeIndex) => {
           context.strokeStyle = routeIndex === 0 ? "green" : "gray";
           if (lastNav) {
             line(lastNav.x, lastNav.y, navPoint.x, navPoint.y);
@@ -177,8 +185,8 @@ const draw = () => {
             );
 
             line(
-              entity.x,
-              entity.y,
+              entity.position.x,
+              entity.position.y,
               navPoint.x,
               navPoint.y,
               hyph > 0 && Math.round(hyph)
@@ -208,17 +216,17 @@ const draw = () => {
         });
       }
 
-      if (entity.type === "ship") {
+      if (entity.properties.type === "ship") {
         // render ship
         rect(
-          entity.x - entity.size / 2,
-          entity.y - entity.size / 2,
-          entity.size,
-          entity.size
+          entity.position.x - entity.properties.size / 2,
+          entity.position.y - entity.properties.size / 2,
+          entity.properties.size,
+          entity.properties.size
         );
-      } else if (entity.type === "planet") {
-        circ(entity.x, entity.y, entity.size);
-      } else if (entity.type === "sun") {
+      } else if (entity.properties.type === "planet") {
+        circ(entity.position.x, entity.position.y, entity.properties.size);
+      } else if (entity.properties.type === "sun") {
         // render sun
         context.strokeStyle = "#ff00ff";
         circ(250, 250, 20);
