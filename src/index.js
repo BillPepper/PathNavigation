@@ -43,15 +43,24 @@ const rect = (x, y, s, col) => {
   context.fill();
 };
 
-const SpaceEntities = [
-  {
+const setDebugText = (text) => {
+  debugElement.innerHTML = text;
+};
+
+const isInRange = (range, value, comparison) => {
+  // plus minus x
+  return Math.abs(value - comparison) <= range;
+};
+
+const createShip = (name, x, y, speed) => {
+  SpaceEntities.push({
     enabled: true,
     selected: false,
     properties: {
-      name: "EZ-100",
+      name: name,
       type: "ship",
       size: 5,
-      speed: 1
+      speed: speed
     },
     status: {
       moving: true,
@@ -59,61 +68,18 @@ const SpaceEntities = [
       radar: true
     },
     position: {
-      x: 10,
-      y: 10,
+      x: x,
+      y: y,
       drawNav: true,
       nav: {
         postArrival: "idle",
-        points: [{ x: 40, y: 40 }]
+        points: [{ x: x, y: y }]
       }
     }
-  },
-  {
-    enabled: true,
-    selected: false,
-    properties: {
-      name: "AK-886",
-      type: "ship",
-      size: 5,
-      speed: 0.8
-    },
-    status: {
-      moving: true,
-      idle: false
-    },
-    position: {
-      x: 100,
-      y: 10,
-      drawNav: true,
-      nav: {
-        postArrival: "idle",
-        points: [{ x: 350, y: 122 }]
-      }
-    }
-  },
-  {
-    enabled: true,
-    selected: false,
-    properties: {
-      name: "HG-239",
-      type: "ship",
-      size: 5,
-      speed: 0.2
-    },
-    status: {
-      moving: true,
-      idle: false
-    },
-    position: {
-      x: 250,
-      y: 250,
-      drawNav: true,
-      nav: {
-        postArrival: "idle",
-        points: [{ x: 250, y: 250 }]
-      }
-    }
-  },
+  });
+};
+
+const SpaceEntities = [
   {
     enabled: false,
     name: "sun",
@@ -145,10 +111,21 @@ const SpaceEntities = [
   }
 ];
 
+const init = () => {
+  // init ships
+  createShip("EZ-100", 50, 10, 1);
+  createShip("AK-886", 100, 10, 0.8);
+  createShip("HG-239", 150, 10, 0.3);
+  createShip("SK-945", 200, 10, 1);
+  createShip("TT-934", 250, 10, 0.8);
+  createShip("UT-223", 300, 10, 0.3);
+};
+
 const update = () => {
   try {
     SpaceEntities.forEach((entity) => {
       if (entity.enabled) {
+        // Update ship's position
         if (entity.status.moving) {
           if (entity.position.x < entity.position.nav.points[0].x) {
             entity.position.x += entity.properties.speed;
@@ -163,8 +140,8 @@ const update = () => {
             entity.position.y -= entity.properties.speed;
           }
 
+          // check for arrival
           if (
-            // check ofr arrival
             isInRange(
               collisionWidth,
               entity.position.y,
@@ -176,6 +153,7 @@ const update = () => {
               entity.position.nav.points[0].x
             )
           ) {
+            // remove navPoint from list
             if (entity.position.nav.points.length > 1) {
               entity.position.nav.points = entity.position.nav.points.slice(
                 1,
@@ -206,7 +184,7 @@ const update = () => {
 
     draw();
   } catch (e) {
-    console.log("error in update, killing main thread", e);
+    console.log(e);
     clearInterval(mainInterval);
   }
 };
@@ -256,7 +234,7 @@ const draw = () => {
               );
             }
           }
-          circ(navPoint.x, navPoint.y, 3);
+          circ(navPoint.x, navPoint.y, 1);
 
           lastNav = navPoint;
         });
@@ -279,18 +257,7 @@ const draw = () => {
   });
 };
 
-const setDebugText = (text) => {
-  debugElement.innerHTML = text;
-};
-
+init();
 const mainInterval = setInterval(() => {
   update();
 }, 100);
-
-const isInRange = (range, value, comparison) => {
-  // plus minus x
-
-  return Math.abs(value - comparison) <= range;
-};
-
-console.log(isInRange(5, 10, -19));
