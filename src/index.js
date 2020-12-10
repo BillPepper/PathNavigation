@@ -1,5 +1,6 @@
 import "./styles.css";
 
+const debugElement = document.getElementById("debug");
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 const canvasRes = 500;
@@ -8,6 +9,7 @@ canvas.width = canvasRes;
 canvas.height = canvasRes;
 
 const debugEnabled = false;
+const collisionWidth = 5;
 
 export const getRandom = (min, max) =>
   Math.floor(Math.random() * (max - min) + min);
@@ -44,16 +46,17 @@ const rect = (x, y, s, col) => {
 const SpaceEntities = [
   {
     enabled: true,
-    selected: true,
+    selected: false,
     properties: {
       name: "EZ-100",
       type: "ship",
-      size: 10,
+      size: 5,
       speed: 1
     },
     status: {
       moving: true,
-      idle: false
+      idle: false,
+      radar: true
     },
     position: {
       x: 10,
@@ -71,8 +74,8 @@ const SpaceEntities = [
     properties: {
       name: "AK-886",
       type: "ship",
-      size: 10,
-      speed: 1
+      size: 5,
+      speed: 0.8
     },
     status: {
       moving: true,
@@ -85,6 +88,29 @@ const SpaceEntities = [
       nav: {
         postArrival: "idle",
         points: [{ x: 350, y: 122 }]
+      }
+    }
+  },
+  {
+    enabled: true,
+    selected: false,
+    properties: {
+      name: "HG-239",
+      type: "ship",
+      size: 5,
+      speed: 0.2
+    },
+    status: {
+      moving: true,
+      idle: false
+    },
+    position: {
+      x: 250,
+      y: 250,
+      drawNav: true,
+      nav: {
+        postArrival: "idle",
+        points: [{ x: 250, y: 250 }]
       }
     }
   },
@@ -138,8 +164,17 @@ const update = () => {
           }
 
           if (
-            entity.position.y === entity.position.nav.points[0].y &&
-            entity.position.x === entity.position.nav.points[0].x
+            // check ofr arrival
+            isInRange(
+              collisionWidth,
+              entity.position.y,
+              entity.position.nav.points[0].y
+            ) &&
+            isInRange(
+              collisionWidth,
+              entity.position.x,
+              entity.position.nav.points[0].x
+            )
           ) {
             if (entity.position.nav.points.length > 1) {
               entity.position.nav.points = entity.position.nav.points.slice(
@@ -156,8 +191,8 @@ const update = () => {
               }
               if (entity.status.idle) {
                 entity.position.nav.points.push({
-                  x: getRandom(100, 300),
-                  y: getRandom(100, 300)
+                  x: getRandom(20, 480),
+                  y: getRandom(20, 480)
                 });
               } else {
                 entity.status.moving = false;
@@ -244,6 +279,18 @@ const draw = () => {
   });
 };
 
+const setDebugText = (text) => {
+  debugElement.innerHTML = text;
+};
+
 const mainInterval = setInterval(() => {
   update();
 }, 100);
+
+const isInRange = (range, value, comparison) => {
+  // plus minus x
+
+  return Math.abs(value - comparison) <= range;
+};
+
+console.log(isInRange(5, 10, -19));
